@@ -95,4 +95,37 @@ window.addEventListener('DOMContentLoaded', () => {
 	}
 
 	setClock('.timer', deadline);
+
+	/* модальное окно */
+
+	const modalTrigger = document.querySelectorAll('[data-modal]'),
+				modal = document.querySelector('.modal'),
+				modalClose = document.querySelector('[data-close]');
+	
+	modalTrigger.forEach(item => {
+		item.addEventListener('click', () => {
+			modal.classList.toggle('show');
+			document.body.style.overflow = 'hidden';
+		});
+	});			
+
+	function closeModalWindow() {
+		modal.classList.toggle('show');
+		document.body.style.overflow = '';
+	}
+
+	modalClose.addEventListener('click', closeModalWindow);
+
+	modal.addEventListener('click', (e) => {
+		if (e.target === modal) {
+			closeModalWindow();
+		}
+	});
+
+	document.addEventListener('keydown', (e) => {
+		if (e.code === 'Escape' && modal.classList.contains('show') ) {
+			closeModalWindow();
+		}
+	});
+	
 });
