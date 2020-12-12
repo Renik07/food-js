@@ -134,7 +134,7 @@ window.addEventListener('DOMContentLoaded', () => {
 		}
 	});
 
-	const modalTimerId = setTimeout(openModal, 10000);
+	/* const modalTimerId = setTimeout(openModal, 10000); */
 
 	/* открытие мод. окна при скролле страницы до конца */
 	function showModalScroll() {
@@ -144,5 +144,73 @@ window.addEventListener('DOMContentLoaded', () => {
 		}
 	}
 	window.addEventListener('scroll', showModalScroll);
-	
+
+	/* использование классов для карточек */
+	class MenuCard {
+		constructor(src, altText, subtitle, descr, price, parentSelector, ...classes) {
+			this.src = src;
+			this.altText = altText;
+			this.subtitle = subtitle;
+			this.descr = descr;
+			this.price = price;
+			this.classes = classes;
+			this.parent = document.querySelector(parentSelector);
+			this.transfer = 75;
+			this.convertСurrency();
+		}
+		convertСurrency() {
+			this.price = this.price * this.transfer;
+		}
+		render() {
+			const elem = document.createElement('div');
+			/* условие добавление класса по умолчанию */
+			if (this.classes.length === 0) {
+				this.element = 'menu__item';
+				elem.classList.add(this.element);
+			} else {
+				this.classes.forEach(className => elem.classList.add(className));
+			}
+			
+			elem.innerHTML = `
+				
+					<img src=${this.src} alt=${this.altText}>
+					<h3 class="menu__item-subtitle">${this.subtitle}</h3>
+					<div class="menu__item-descr">${this.descr}</div>
+					<div class="menu__item-divider"></div>
+					<div class="menu__item-price">
+							<div class="menu__item-cost">Цена:</div>
+							<div class="menu__item-total"><span>${this.price}</span> руб/день</div>
+					</div>
+				
+			`;
+			this.parent.append(elem);
+		}
+	}
+
+	new MenuCard (
+		'https://i1.wp.com/images11.popmeh.ru/upload/img_cache/3ad/3adc214adda810190b9b91681bc8e28a_fitted_800x3000.jpg',
+		'Qivi',
+		'Карточка созданная в JS с помощью класса',
+		'Меню "Фитнес" - это новый подход к приготовлению блюд: больше свежих овощей и фруктов. Продукт активных и здоровых людей. Это абсолютно новый продукт с оптимальной ценой и высоким качеством!',
+		9,
+		'.menu .container'
+	).render();
+
+	new MenuCard (
+		'https://i1.wp.com/images11.popmeh.ru/upload/img_cache/3ad/3adc214adda810190b9b91681bc8e28a_fitted_800x3000.jpg',
+		'Qivi',
+		'Карточка созданная в JS с помощью класса',
+		'В меню “Премиум” мы используем не только красивый дизайн упаковки, но и качественное исполнение блюд. Красная рыба, морепродукты, фрукты - ресторанное меню без похода в ресторан!',
+		10,
+		'.menu .container'
+	).render();
+
+	new MenuCard (
+		'https://i1.wp.com/images11.popmeh.ru/upload/img_cache/3ad/3adc214adda810190b9b91681bc8e28a_fitted_800x3000.jpg',
+		'Qivi',
+		'Карточка созданная в JS с помощью класса',
+		'Меню “Постное” - это тщательный подбор ингредиентов: полное отсутствие продуктов животного происхождения, молоко из миндаля, овса, кокоса или гречки, правильное количество белков за счет тофу и импортных вегетарианских стейков.',
+		5,
+		'.menu .container'
+	).render();
 });
