@@ -99,30 +99,29 @@ window.addEventListener('DOMContentLoaded', () => {
 	/* модальное окно */
 
 	const modalTrigger = document.querySelectorAll('[data-modal]'),
-				modal = document.querySelector('.modal'),
-				modalClose = document.querySelector('[data-close]');
+				modal = document.querySelector('.modal');
 	
 	/* открытие модального окна */
+	modalTrigger.forEach(item => {
+			item.addEventListener('click', openModal);
+		});	
+
 	function openModal() {
-		modal.classList.toggle('show');
+		modal.classList.add('show');
+		modal.classList.remove('hide');
 		document.body.style.overflow = 'hidden';
 		clearInterval(modalTimerId);
 	}
-
-	modalTrigger.forEach(item => {
-		item.addEventListener('click', openModal);
-	});	
-
+	
 	/* закрытие мод.окна */
 	function closeModalWindow() {
-		modal.classList.toggle('show');
+		modal.classList.add('hide');
+		modal.classList.remove('show');
 		document.body.style.overflow = '';
 	}
 
-	modalClose.addEventListener('click', closeModalWindow);
-
 	modal.addEventListener('click', (e) => {
-		if (e.target === modal) {
+		if (e.target === modal || e.target.getAttribute('data-close') == '') {
 			closeModalWindow();
 		}
 	});
@@ -134,7 +133,7 @@ window.addEventListener('DOMContentLoaded', () => {
 		}
 	});
 
-	/* const modalTimerId = setTimeout(openModal, 10000); */
+	const modalTimerId = setTimeout(openModal, 4000);
 
 	/* открытие мод. окна при скролле страницы до конца */
 	function showModalScroll() {
@@ -145,7 +144,7 @@ window.addEventListener('DOMContentLoaded', () => {
 	}
 	window.addEventListener('scroll', showModalScroll);
 
-	/* использование классов для карточек */
+	/* использование классов для карточек меню */
 	class MenuCard {
 		constructor(src, altText, subtitle, descr, price, parentSelector, ...classes) {
 			this.src = src;
@@ -190,7 +189,7 @@ window.addEventListener('DOMContentLoaded', () => {
 	new MenuCard (
 		'https://i1.wp.com/images11.popmeh.ru/upload/img_cache/3ad/3adc214adda810190b9b91681bc8e28a_fitted_800x3000.jpg',
 		'Qivi',
-		'Карточка созданная в JS с помощью класса',
+		'Карточка созданная в JS с помощью класса MenuCard',
 		'Меню "Фитнес" - это новый подход к приготовлению блюд: больше свежих овощей и фруктов. Продукт активных и здоровых людей. Это абсолютно новый продукт с оптимальной ценой и высоким качеством!',
 		9,
 		'.menu .container'
@@ -199,7 +198,7 @@ window.addEventListener('DOMContentLoaded', () => {
 	new MenuCard (
 		'https://i1.wp.com/images11.popmeh.ru/upload/img_cache/3ad/3adc214adda810190b9b91681bc8e28a_fitted_800x3000.jpg',
 		'Qivi',
-		'Карточка созданная в JS с помощью класса',
+		'Карточка созданная в JS с помощью класса MenuCard',
 		'В меню “Премиум” мы используем не только красивый дизайн упаковки, но и качественное исполнение блюд. Красная рыба, морепродукты, фрукты - ресторанное меню без похода в ресторан!',
 		10,
 		'.menu .container'
@@ -208,9 +207,92 @@ window.addEventListener('DOMContentLoaded', () => {
 	new MenuCard (
 		'https://i1.wp.com/images11.popmeh.ru/upload/img_cache/3ad/3adc214adda810190b9b91681bc8e28a_fitted_800x3000.jpg',
 		'Qivi',
-		'Карточка созданная в JS с помощью класса',
+		'Карточка созданная в JS с помощью класса MenuCard',
 		'Меню “Постное” - это тщательный подбор ингредиентов: полное отсутствие продуктов животного происхождения, молоко из миндаля, овса, кокоса или гречки, правильное количество белков за счет тофу и импортных вегетарианских стейков.',
 		5,
 		'.menu .container'
 	).render();
+
+	/* Forms */
+
+	const forms = document.querySelectorAll('form');
+
+	const message = {
+		loading: 'img/form/spinner.svg',
+		success: 'Спасибо! Скоро мы с Вами свяжемся',
+		failure: 'Что-то пошло не так'
+	};
+
+	forms.forEach(item => {
+		postData(item);
+	});
+
+	function postData(form) {
+		form.addEventListener('submit', (e) => {
+			e.preventDefault();
+
+			let statusMessage = document.createElement('img');
+			statusMessage.src = message.loading;
+			statusMessage.style.cssText = `
+				display: block;
+				margin: 0 auto;
+			`;
+			/* form.append(statusMessage); */
+			form.insertAdjacentElement('afterend', statusMessage);
+        
+
+			const request = new XMLHttpRequest();
+			request.open('POST', 'server.php');
+
+			request.setRequestHeader('Content-type', 'application/json');
+			const formData = new FormData(form);
+
+			/* formData превращаем в формат JSON */
+			const object = {};
+			formData.forEach(function(value, key) {
+				object[key] = value;
+			});
+
+			const json = JSON.stringify(object);
+			request.send(json);
+
+			/* request.send(formData); */
+
+			request.addEventListener('load', () => {
+				if (request.status === 200) {
+					console.log(request.response);
+					showThanksModal(message.success);
+					statusMessage.remove();
+					form.reset();
+				} else {
+					showThanksModal(message.failure);
+				}
+			});
+		});
+	}
+	/* модальное окно после отправки данных */
+	function showThanksModal(message) {
+		const prevModalDialog = document.querySelector('.modal__dialog');
+
+		prevModalDialog.classList.add('hide');
+		openModal();
+
+		const thanksModal = document.createElement('div');
+
+		thanksModal.classList.add('modal__dialog');
+		thanksModal.innerHTML = `
+			<div class="modal__content">
+				<div data-close class="modal__close">&times;</div>
+				<div class="modal__title">${message}</div>
+			</div>
+		`;
+
+		document.querySelector('.modal').append(thanksModal);
+		setTimeout(() => {
+			thanksModal.remove();
+			prevModalDialog.classList.add('show');
+			prevModalDialog.classList.remove('hide');
+			closeModalWindow();
+		}, 4000);
+	}
 });
