@@ -1,4 +1,3 @@
-
 window.addEventListener('DOMContentLoaded', () => {
 	/* tabs */
 	const tabs = document.querySelectorAll('.tabheader__item'),
@@ -133,7 +132,7 @@ window.addEventListener('DOMContentLoaded', () => {
 		}
 	});
 
-	const modalTimerId = setTimeout(openModal, 4000);
+	/* const modalTimerId = setTimeout(openModal, 10000); */
 
 	/* открытие мод. окна при скролле страницы до конца */
 	function showModalScroll() {
@@ -186,32 +185,48 @@ window.addEventListener('DOMContentLoaded', () => {
 		}
 	}
 
-	new MenuCard (
-		'https://i1.wp.com/images11.popmeh.ru/upload/img_cache/3ad/3adc214adda810190b9b91681bc8e28a_fitted_800x3000.jpg',
-		'Qivi',
-		'Карточка созданная в JS с помощью класса MenuCard',
-		'Меню "Фитнес" - это новый подход к приготовлению блюд: больше свежих овощей и фруктов. Продукт активных и здоровых людей. Это абсолютно новый продукт с оптимальной ценой и высоким качеством!',
-		9,
-		'.menu .container'
-	).render();
+	const getResource = async (url) => {
+		const result = await fetch(url);
+		/* алгоритм избегания ошибок */
+		if (!result.ok) {
+			throw new Error(`Could not fetch ${url}, status: ${result.status}`);
+		}
+		return await result.json();
+	};
 
-	new MenuCard (
-		'https://i1.wp.com/images11.popmeh.ru/upload/img_cache/3ad/3adc214adda810190b9b91681bc8e28a_fitted_800x3000.jpg',
-		'Qivi',
-		'Карточка созданная в JS с помощью класса MenuCard',
-		'В меню “Премиум” мы используем не только красивый дизайн упаковки, но и качественное исполнение блюд. Красная рыба, морепродукты, фрукты - ресторанное меню без похода в ресторан!',
-		10,
-		'.menu .container'
-	).render();
+	/* getResource('http://localhost:3000/menu')
+		.then(data => {
+			data.forEach(({img, altimg, title, descr, price}) => {
+				new MenuCard(img, altimg, title, descr, price, '.menu .container').render();
+			});
+		}); */
 
-	new MenuCard (
-		'https://i1.wp.com/images11.popmeh.ru/upload/img_cache/3ad/3adc214adda810190b9b91681bc8e28a_fitted_800x3000.jpg',
-		'Qivi',
-		'Карточка созданная в JS с помощью класса MenuCard',
-		'Меню “Постное” - это тщательный подбор ингредиентов: полное отсутствие продуктов животного происхождения, молоко из миндаля, овса, кокоса или гречки, правильное количество белков за счет тофу и импортных вегетарианских стейков.',
-		5,
-		'.menu .container'
-	).render();
+	getResource('http://localhost:3000/menu')
+		.then(data => createCard(data));
+	
+	function createCard(data) {
+		// деструктуризация объекта на отдельные свойства
+		data.forEach(({img, altimg, title, descr, price}) => {
+			const element = document.createElement('div'),
+						convertPrice = price * 75;
+
+			element.classList.add('menu__item');
+			element.innerHTML = `
+
+				<img src=${img} alt=${altimg}>
+				<h3 class="menu__item-subtitle">${title}</h3>
+				<div class="menu__item-descr">${descr}</div>
+				<div class="menu__item-divider"></div>
+				<div class="menu__item-price">
+						<div class="menu__item-cost">Цена:</div>
+						<div class="menu__item-total"><span>${convertPrice}</span> руб/день</div>
+				</div>
+
+			`;
+
+			document.querySelector('.menu .container').append(element);
+		});
+	}
 
 	/* Forms */
 
@@ -224,10 +239,22 @@ window.addEventListener('DOMContentLoaded', () => {
 	};
 
 	forms.forEach(item => {
-		postData(item);
+		bindPostData(item);
 	});
+	/* async - внутри функции будет асинхронный код */
+	const postData = async (url, data) => {
+		const result = await fetch(url, {
+			method: "POST",
+			headers: {
+				'Content-type': 'application/json'
+			},
+			body: data
+		});
 
-	function postData(form) {
+		return await result.json();
+	};
+
+	function bindPostData(form) {
 		form.addEventListener('submit', (e) => {
 			e.preventDefault();
 
@@ -242,20 +269,12 @@ window.addEventListener('DOMContentLoaded', () => {
         
 			const formData = new FormData(form);
 
-			/* трансформация formData в формат JSON */
-			const object = {};
-			formData.forEach(function(value, key) {
-				object[key] = value;
-			});
+			/* Берем formData c данными с формы, превращаем в массив массивов(entries),
+			после превращаем в классический объект(Object.fromEntries),
+			после превращаем в JSON */
+			const json = JSON.stringify(Object.fromEntries(formData.entries()));
 
-			fetch('server.php', {
-				method: "POST",
-				headers: {
-					'Content-type': 'application/json'
-				},
-				body: JSON.stringify(object)
-			})
-			.then(data => data.text())
+			postData('http://localhost:3000/requests', json)
 			.then(data => {
 					console.log(data);
 					showThanksModal(message.success);
@@ -293,4 +312,49 @@ window.addEventListener('DOMContentLoaded', () => {
 			closeModalWindow();
 		}, 4000);
 	}
+
+	/* slider */
+
+	const btnPrev = document.querySelector('.offer__slider-prev'),
+				btnNext = document.querySelector('.offer__slider-next'),
+				slides = document.querySelectorAll('.offer__slide'),
+				currentNumber = document.getElementById('current'),
+				totalNumber = document.getElementById('total');
+	let currentIndex = 0;
+			
+	showSlides(currentIndex);
+
+	function showSlides(i) {
+		currentIndex = i;
+		if (i >= slides.length) {
+			currentIndex = 0;
+		}
+		if (i < 0) {
+			currentIndex = slides.length - 1;
+		}
+		slides.forEach(item => {
+			item.classList.add('hide');
+		});
+		slides[currentIndex].classList.add('show', 'fade');
+		slides[currentIndex].classList.remove('hide');
+
+		totalNumber.innerHTML = slides.length;
+		currentNumber.innerHTML = currentIndex + 1;
+		if (totalNumber.innerHTML < 10) {
+			totalNumber.innerHTML = `0${slides.length}`;
+		}
+		if (currentNumber.innerHTML < 10) {
+			currentNumber.innerHTML = `0${currentIndex + 1}`;
+		}
+	}
+
+	btnNext.addEventListener('click', () => {
+		currentIndex++;
+		showSlides(currentIndex);
+	});
+	btnPrev.addEventListener('click', () => {
+		currentIndex--;
+		showSlides(currentIndex);
+	});
+
 });
