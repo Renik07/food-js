@@ -323,6 +323,10 @@ window.addEventListener('DOMContentLoaded', () => {
 	let currentIndex = 0;
 			
 	showSlides(currentIndex);
+	
+	if (slides.length < 10) {
+			totalNumber.textContent = `0${slides.length}`;
+		}
 
 	function showSlides(i) {
 		currentIndex = i;
@@ -338,13 +342,9 @@ window.addEventListener('DOMContentLoaded', () => {
 		slides[currentIndex].classList.add('show', 'fade');
 		slides[currentIndex].classList.remove('hide');
 
-		totalNumber.innerHTML = slides.length;
-		currentNumber.innerHTML = currentIndex + 1;
-		if (totalNumber.innerHTML < 10) {
-			totalNumber.innerHTML = `0${slides.length}`;
-		}
-		if (currentNumber.innerHTML < 10) {
-			currentNumber.innerHTML = `0${currentIndex + 1}`;
+		currentNumber.textContent = currentIndex + 1;
+		if (currentNumber.textContent < 10) {
+			currentNumber.textContent = `0${currentIndex + 1}`;
 		}
 	}
 
