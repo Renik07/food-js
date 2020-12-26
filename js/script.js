@@ -319,10 +319,73 @@ window.addEventListener('DOMContentLoaded', () => {
 				btnNext = document.querySelector('.offer__slider-next'),
 				slides = document.querySelectorAll('.offer__slide'),
 				currentNumber = document.getElementById('current'),
-				totalNumber = document.getElementById('total');
-	let currentIndex = 0;
-			
-	showSlides(currentIndex);
+				totalNumber = document.getElementById('total'),
+				slidesWrapper = document.querySelector('.offer__slider-wrapper'),
+				slidesField = document.querySelector('.offer__slider-inner'),
+				widthWrapper = window.getComputedStyle(slidesWrapper).width;
+	let currentIndex = 1,
+			offset = 0;
+
+	totalNumber.textContent = slides.length;
+
+	if (slides.length > 9) {
+		totalNumber.textContent = slides.length;
+		currentNumber.textContent = currentIndex;
+	} else {
+		totalNumber.textContent = `0${slides.length}`;
+		currentNumber.textContent = `0${currentIndex}`;
+	}
+
+	/* ширина внутренней обертки для слайдов */
+	slidesField.style.width = 100 * slides.length + '%';
+	/* для каждого отдельного слайда задаем одинаковую ширину = ширину внешней обертки */
+	slides.forEach(slide => {
+		slide.style.width = widthWrapper;
+	});
+
+	btnNext.addEventListener('click', () => {
+		if (offset == +widthWrapper.slice(0, widthWrapper.length - 2) * (slides.length - 1)) {
+			offset = 0;
+		} else {
+			offset += +widthWrapper.slice(0, widthWrapper.length - 2);
+		}
+		slidesField.style.transform = `translateX(-${offset}px)`;
+
+		if (currentIndex == slides.length) {
+			currentIndex = 1;
+		} else {
+			currentIndex++;
+		}
+
+		if (slides.length > 9) {
+			currentNumber.textContent = currentIndex;
+		} else {
+			currentNumber.textContent = `0${currentIndex}`;
+		}
+	});
+
+	btnPrev.addEventListener('click', () => {
+		if (offset == 0) {
+			offset = +widthWrapper.slice(0, widthWrapper.length - 2) * (slides.length - 1);
+		} else {
+			offset -= +widthWrapper.slice(0, widthWrapper.length - 2);
+		}
+		slidesField.style.transform = `translateX(-${offset}px)`;
+
+		if (currentIndex == 1) {
+			currentIndex = slides.length;
+		} else {
+			currentIndex--;
+		}
+
+		if (slides.length > 9) {
+			currentNumber.textContent = currentIndex;
+		} else {
+			currentNumber.textContent = `0${currentIndex}`;
+		}
+	});
+	/* второй, более простой вариант слайдера */
+	/* showSlides(currentIndex);
 	
 	if (slides.length < 10) {
 			totalNumber.textContent = `0${slides.length}`;
@@ -355,6 +418,6 @@ window.addEventListener('DOMContentLoaded', () => {
 	btnPrev.addEventListener('click', () => {
 		currentIndex--;
 		showSlides(currentIndex);
-	});
+	}); */
 
 });
