@@ -315,7 +315,8 @@ window.addEventListener('DOMContentLoaded', () => {
 
 	/* slider */
 
-	const btnPrev = document.querySelector('.offer__slider-prev'),
+	const slider = document.querySelector('.offer__slider'),
+				btnPrev = document.querySelector('.offer__slider-prev'),
 				btnNext = document.querySelector('.offer__slider-next'),
 				slides = document.querySelectorAll('.offer__slide'),
 				currentNumber = document.getElementById('current'),
@@ -334,6 +335,26 @@ window.addEventListener('DOMContentLoaded', () => {
 	} else {
 		totalNumber.textContent = `0${slides.length}`;
 		currentNumber.textContent = `0${currentIndex}`;
+	}
+
+	/* навигация слайдера */
+	slider.style.position = 'relative';
+	const dots = document.createElement('ol'),
+				dotsArray = [];
+	dots.classList.add('carousel-indicators');
+	slider.append(dots);
+
+	for (let i = 0; i < slides.length; i++) {
+		const dot = document.createElement('li');
+		/* каждой точке устанавливаем дата-атрибут и нумерацию */
+		dot.setAttribute('data-slide-to', i + 1)
+		dot.classList.add('dot');
+		dots.append(dot);
+
+		if (i == 0) {
+			dot.classList.add('active');
+		}
+		dotsArray.push(dot);
 	}
 
 	/* ширина внутренней обертки для слайдов */
@@ -357,11 +378,8 @@ window.addEventListener('DOMContentLoaded', () => {
 			currentIndex++;
 		}
 
-		if (slides.length > 9) {
-			currentNumber.textContent = currentIndex;
-		} else {
-			currentNumber.textContent = `0${currentIndex}`;
-		}
+		changeNumber();
+		addClass();
 	});
 
 	btnPrev.addEventListener('click', () => {
@@ -378,12 +396,39 @@ window.addEventListener('DOMContentLoaded', () => {
 			currentIndex--;
 		}
 
+		changeNumber();
+		addClass();
+	});
+
+	/* перебираем массив и на каждую точку вешаем событие клик */
+	dotsArray.forEach(dot => {
+		dot.addEventListener('click', (event) => {
+			const slideTo = event.target.getAttribute('data-slide-to');
+			/* перемещаем слайды при нажатии на точки */
+			currentIndex = slideTo;
+			offset = +widthWrapper.slice(0, widthWrapper.length - 2) * (slideTo - 1);
+			slidesField.style.transform = `translateX(-${offset}px)`;
+
+			addClass();
+			changeNumber();
+		})
+	});
+	/* добавляем/удаляем класс активности */
+	function addClass() {
+		dotsArray.forEach(dot => {
+			dot.classList.remove('active');
+			dotsArray[currentIndex - 1].classList.add('active');
+		});
+	}
+	/* изменяем нумерацию слайдов */
+	function changeNumber() {
 		if (slides.length > 9) {
 			currentNumber.textContent = currentIndex;
 		} else {
 			currentNumber.textContent = `0${currentIndex}`;
 		}
-	});
+	}
+
 	/* второй, более простой вариант слайдера */
 	/* showSlides(currentIndex);
 	
@@ -419,5 +464,4 @@ window.addEventListener('DOMContentLoaded', () => {
 		currentIndex--;
 		showSlides(currentIndex);
 	}); */
-
 });
