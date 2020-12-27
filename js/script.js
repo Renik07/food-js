@@ -365,10 +365,11 @@ window.addEventListener('DOMContentLoaded', () => {
 	});
 
 	btnNext.addEventListener('click', () => {
-		if (offset == +widthWrapper.slice(0, widthWrapper.length - 2) * (slides.length - 1)) {
+		/* deleteNotDigits(widthWrapper) регулярное выражение - удаляем "px" */
+		if (offset == deleteNotDigits(widthWrapper) * (slides.length - 1)) {
 			offset = 0;
 		} else {
-			offset += +widthWrapper.slice(0, widthWrapper.length - 2);
+			offset += deleteNotDigits(widthWrapper);
 		}
 		slidesField.style.transform = `translateX(-${offset}px)`;
 
@@ -384,9 +385,9 @@ window.addEventListener('DOMContentLoaded', () => {
 
 	btnPrev.addEventListener('click', () => {
 		if (offset == 0) {
-			offset = +widthWrapper.slice(0, widthWrapper.length - 2) * (slides.length - 1);
+			offset = deleteNotDigits(widthWrapper) * (slides.length - 1);
 		} else {
-			offset -= +widthWrapper.slice(0, widthWrapper.length - 2);
+			offset -= deleteNotDigits(widthWrapper);
 		}
 		slidesField.style.transform = `translateX(-${offset}px)`;
 
@@ -406,7 +407,7 @@ window.addEventListener('DOMContentLoaded', () => {
 			const slideTo = event.target.getAttribute('data-slide-to');
 			/* перемещаем слайды при нажатии на точки */
 			currentIndex = slideTo;
-			offset = +widthWrapper.slice(0, widthWrapper.length - 2) * (slideTo - 1);
+			offset = deleteNotDigits(widthWrapper) * (slideTo - 1);
 			slidesField.style.transform = `translateX(-${offset}px)`;
 
 			addClass();
@@ -427,6 +428,10 @@ window.addEventListener('DOMContentLoaded', () => {
 		} else {
 			currentNumber.textContent = `0${currentIndex}`;
 		}
+	}
+	/* удаляем все что не цифры и заменяем на '' */
+	function deleteNotDigits(str) {
+		return +str.replace(/\D/g, '');
 	}
 
 	/* второй, более простой вариант слайдера */
